@@ -22,7 +22,7 @@ services:
     volumes:
         - ..:/go/src/github.com/alldroll/multiarmed-bandit
     working_dir: /go/src/github.com/alldroll/multiarmed-bandit
-    command: bash cmd/run.sh
+    command: bash cmd/app/run.sh
     ports:
         - "8080:80"
     environment:
