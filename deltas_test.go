@@ -154,7 +154,7 @@ func TestStore(t *testing.T) {
 	}
 
 	m := deltaMap{}
-	storage := NewStorage()
+	storage := NewInMemoryStorage()
 	snapshot := make(tableSnapshot)
 
 	for _, experiment := range experiments {
@@ -170,21 +170,30 @@ func TestStore(t *testing.T) {
 	if err := m.store(storage); err != nil {
 		t.Errorf("Unexpected error %v", err)
 	}
-	/*
 
-		expected1 := NewExperiment(
-			"test1",
-			0.1,
-			[]Variant{
-				NewVariant(1.0, 20, 3),
-				NewVariant(1.0, 41, 15),
-			},
-		)
-		experiment1 := storage.Find("test1")
+	experiment1, err := storage.Find("test1")
+	if err != nil {
+		t.Errorf("Unexpected error %v", err)
+	}
 
-		if !reflect.DeepEqual(expected1, experiment1) {
-			t.Errorf("Test fail, expected %v, got %v", expected1, experiment1)
-		}*/
+	expected1 := NewExperiment(
+		"test1",
+		0.1,
+		[]Variant{
+			NewVariant(1.0, 20, 3),
+			NewVariant(1.0, 41, 15),
+		},
+	)
+
+	for i, v := range expected1.GetVariants() {
+		if expected1.GetVariants()[i] != v {
+			t.Errorf(
+				"Test fail, expected %v, got %v",
+				v,
+				experiment1.GetVariants()[i],
+			)
+		}
+	}
 }
 
 func BenchmarkIncrement(b *testing.B) {

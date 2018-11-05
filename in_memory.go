@@ -1,29 +1,31 @@
 package multiarmed_bandit
 
-import "fmt"
+import (
+	"fmt"
+)
 
 type memoryStorage struct {
 	data []Experiment
 }
 
-func NewStorage() *memoryStorage {
+func NewInMemoryStorage() *memoryStorage {
 	return &memoryStorage{
 		data: []Experiment{},
 	}
 }
 
-func (m *memoryStorage) Find(name string) Experiment {
+func (m *memoryStorage) Find(name string) (Experiment, error) {
 	for _, experiment := range m.data {
 		if experiment.GetName() == name {
-			return experiment
+			return experiment, nil
 		}
 	}
 
-	return nil
+	return nil, nil
 }
 
-func (m *memoryStorage) FindAll() []Experiment {
-	return m.data
+func (m *memoryStorage) FindAll() ([]Experiment, error) {
+	return m.data, nil
 }
 
 func (m *memoryStorage) Save(experiment Experiment) error {
@@ -32,7 +34,7 @@ func (m *memoryStorage) Save(experiment Experiment) error {
 }
 
 func (m *memoryStorage) IncrementVariant(name string, id uint32, showsDelta, rewardDelta uint32) error {
-	experiment := m.Find(name)
+	experiment, _ := m.Find(name)
 	if experiment == nil {
 		return fmt.Errorf("Experiment %s is not found", name)
 	}

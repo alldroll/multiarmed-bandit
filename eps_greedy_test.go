@@ -3,7 +3,10 @@ package multiarmed_bandit
 import "testing"
 
 func TestFlow(t *testing.T) {
-	storage := NewSnapshotStorage(NewStorage())
+	storage, err := NewSnapshotStorage(NewInMemoryStorage())
+	if err != nil {
+		t.Errorf("Unexpected error %v", err)
+	}
 
 	storage.Save(
 		NewExperiment(
@@ -40,5 +43,14 @@ func TestFlow(t *testing.T) {
 	}
 
 	storage.Update()
-	//experiment := storage.Find("test1")
+
+	choice, err := algo.Choose("test1")
+
+	if err != nil {
+		t.Errorf("Unexpected error %v", err)
+	}
+
+	if choice != 0 {
+		t.Errorf("Expected 0, got %v", choice)
+	}
 }

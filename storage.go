@@ -3,9 +3,9 @@ package multiarmed_bandit
 // Storage represents layer for manipulating entities
 type Storage interface {
 	// Find returns Experiment by given name
-	Find(name string) Experiment
+	Find(name string) (Experiment, error)
 	// FindAll returns content
-	FindAll() []Experiment
+	FindAll() ([]Experiment, error)
 	// Save saves experiment in storage
 	Save(experiment Experiment) error
 	// IncrementVariant increments shows and rewards for given experiment's variant.

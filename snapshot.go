@@ -5,6 +5,11 @@ import (
 	"sync/atomic"
 )
 
+type Updatable interface {
+	//
+	Update() error
+}
+
 //
 type tableSnapshot = map[string]Experiment
 
@@ -16,25 +21,30 @@ type snapshotStorage struct {
 }
 
 //
-func NewSnapshotStorage(persistentStorage Storage) *snapshotStorage {
+func NewSnapshotStorage(persistentStorage Storage) (*snapshotStorage, error) {
 	storage := &snapshotStorage{
 		persistentStorage: persistentStorage,
 		snapshotRef:       atomic.Value{},
 		deltaMap:          deltaMap{},
 	}
 
-	storage.takeSnapshot()
-	return storage
+	// TODO should return err
+	err := storage.takeSnapshot()
+	if err != nil {
+		return nil, err
+	}
+
+	return storage, nil
 }
 
 //
-func (s *snapshotStorage) Find(name string) Experiment {
+func (s *snapshotStorage) Find(name string) (Experiment, error) {
 	table := s.snapshotRef.Load().(tableSnapshot)
-	return table[name]
+	return table[name], nil
 }
 
 //
-func (s *snapshotStorage) FindAll() []Experiment {
+func (s *snapshotStorage) FindAll() ([]Experiment, error) {
 	table := s.snapshotRef.Load().(tableSnapshot)
 	list := make([]Experiment, 0, len(table))
 
@@ -42,7 +52,7 @@ func (s *snapshotStorage) FindAll() []Experiment {
 		list = append(list, entity)
 	}
 
-	return list
+	return list, nil
 }
 
 //
@@ -77,8 +87,7 @@ func (s *snapshotStorage) Update() error {
 	}
 
 	// take snapshot from persistent storage
-	s.takeSnapshot()
-	return nil
+	return s.takeSnapshot()
 }
 
 // storeDeltas saves deltas to persitent storage
@@ -87,10 +96,15 @@ func (s *snapshotStorage) storeDeltas() error {
 }
 
 // takeSnapshot from persistent storage
-func (s *snapshotStorage) takeSnapshot() {
+func (s *snapshotStorage) takeSnapshot() error {
 	snapshot := make(tableSnapshot)
+	experiments, err := s.persistentStorage.FindAll()
 
-	for _, experiment := range s.persistentStorage.FindAll() {
+	if err != nil {
+		return err
+	}
+
+	for _, experiment := range experiments {
 		snapshot[experiment.GetName()] = experiment
 	}
 
@@ -99,4 +113,6 @@ func (s *snapshotStorage) takeSnapshot() {
 
 	// store new instance of snapshot
 	s.snapshotRef.Store(snapshot)
+
+	return nil
 }

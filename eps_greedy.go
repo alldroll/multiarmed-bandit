@@ -19,7 +19,12 @@ type epsilonGreedy struct {
 
 //
 func (e *epsilonGreedy) Choose(name string) (uint32, error) {
-	experiment := e.storage.Find(name)
+	experiment, err := e.storage.Find(name)
+
+	if err != nil {
+		return 0, err
+	}
+
 	if experiment == nil {
 		return 0, fmt.Errorf("Experiment %v is not exists", name)
 	}

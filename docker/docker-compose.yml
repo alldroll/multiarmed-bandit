@@ -1,0 +1,33 @@
+version: "3"
+services:
+  mysql:
+    image: mysql:5.7.21
+    ports:
+        - 3308:3306 # avoid local mysql port busy
+    expose:
+        - "3306"
+    volumes:
+        - ../dump:/var/lib/mysql
+    environment:
+        MYSQL_ROOT_PASSWORD: ""
+        MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
+        MYSQL_USER: "app"
+        MYSQL_PASSWORD: "app"
+        MYSQL_DATABASE: "app"
+
+  web:
+    depends_on:
+        - mysql
+    build: .
+    volumes:
+        - ..:/go/src/github.com/alldroll/multiarmed-bandit
+    working_dir: /go/src/github.com/alldroll/multiarmed-bandit
+    command: bash cmd/run.sh
+    ports:
+        - "8080:80"
+    environment:
+        - PORT=80
+        - APP_DB_HOST=mysql:3306
+        - APP_DB_NAME=app
+        - APP_DB_USERNAME=app
+        - APP_DB_PASSWORD=app
