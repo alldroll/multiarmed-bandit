@@ -33,6 +33,11 @@ func (m *memoryStorage) Save(experiment Experiment) error {
 	return nil
 }
 
+func (m *memoryStorage) Delete(name string) error {
+	delete(m.data, name)
+	return nil
+}
+
 func (m *memoryStorage) IncrementVariant(name string, id uint32, showsDelta, rewardDelta uint32) error {
 	experiment, _ := m.Find(name)
 	if experiment == nil {

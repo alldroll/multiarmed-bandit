@@ -57,7 +57,14 @@ func (s *snapshotStorage) FindAll() ([]Experiment, error) {
 
 //
 func (s *snapshotStorage) Save(experiment Experiment) error {
+	// TODO need to call Update?
 	return s.persistentStorage.Save(experiment)
+}
+
+//
+func (s *snapshotStorage) Delete(name string) error {
+	// TODO need to call Update?
+	return s.persistentStorage.Delete(name)
 }
 
 //

@@ -38,12 +38,14 @@ func runApp() {
 
 	runScheduler(service)
 
-	userController := &userController{
-		algo: service.GetAlgorithm(),
-	}
+	userController := newUserController(service.GetAlgorithm())
+	adminController := newAdminController(service.GetStorage())
 
 	r := mux.NewRouter()
+
 	userController.bindRoutes(r)
+	adminController.bindRoutes(r)
+
 	log.Fatal(http.ListenAndServe(":"+port, r))
 }
 

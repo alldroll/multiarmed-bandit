@@ -11,5 +11,6 @@ CREATE TABLE `variant` (
     `experiment_name` VARCHAR(255) NOT NULL,
     `shows` INT(11) UNSIGNED NOT NULL DEFAULT 0,
     `rewards` INT(11) UNSIGNED NOT NULL DEFAULT 0,
-    PRIMARY KEY (`experiment_name`, `id`)
+    PRIMARY KEY (`experiment_name`, `id`),
+    FOREIGN KEY (`experiment_name`) REFERENCES experiment(name) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=UTF8;

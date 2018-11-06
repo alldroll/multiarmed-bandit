@@ -69,29 +69,17 @@ func (s *sqlStorage) FindAll() ([]Experiment, error) {
 	for rows.Next() {
 		rows.Scan(&name, &gamma, &shows, &rewards)
 
-		if prev == nil {
-			prev = NewExperiment(name, gamma, nil)
-		}
-
-		if prev.GetName() != name {
-			experiments = append(experiments, NewExperiment(
-				prev.GetName(),
-				prev.GetGamma(),
-				variants,
-			))
-
+		if prev != nil && prev.GetName() != name {
+			experiments = append(experiments, prev)
 			variants = variants[:0]
 		}
 
 		variants = append(variants, NewVariant(0, rewards, shows))
+		prev = NewExperiment(name, gamma, variants)
 	}
 
-	if len(variants) > 0 {
-		experiments = append(experiments, NewExperiment(
-			name,
-			gamma,
-			variants,
-		))
+	if prev != nil {
+		experiments = append(experiments, prev)
 	}
 
 	return experiments, nil
@@ -109,7 +97,7 @@ func (s *sqlStorage) Save(experiment Experiment) error {
 	}
 
 	_, err = tx.Exec(
-		`INSERT INTO experiment (name, gamma) VALUES (?, ?)`,
+		`REPLACE INTO experiment (name, gamma) VALUES (?, ?)`,
 		experiment.GetName(),
 		experiment.GetGamma(),
 	)
@@ -150,6 +138,17 @@ func (s *sqlStorage) Save(experiment Experiment) error {
 	}
 
 	return nil
+}
+
+//
+func (s *sqlStorage) Delete(name string) error {
+	_, err := s.db.Exec(
+		`DELETE FROM experiment WHERE name = ?`,
+		name,
+	)
+
+	// TODO should i check rowsAffected or it doesn't matter
+	return err
 }
 
 //
