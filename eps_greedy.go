@@ -5,6 +5,7 @@ import (
 	"math/rand"
 )
 
+//
 func NewEpsilonGreedy(epsilon float32, storage Storage) *epsilonGreedy {
 	return &epsilonGreedy{
 		epsilon: epsilon,
@@ -18,7 +19,7 @@ type epsilonGreedy struct {
 }
 
 //
-func (e *epsilonGreedy) Choose(name string) (uint32, error) {
+func (e *epsilonGreedy) Suggest(name string) (uint32, error) {
 	experiment, err := e.storage.Find(name)
 
 	if err != nil {
@@ -33,13 +34,7 @@ func (e *epsilonGreedy) Choose(name string) (uint32, error) {
 	lenVariants := len(variants)
 
 	if rand.Float32() < e.epsilon {
-		choice := uint32(rand.Intn(lenVariants))
-
-		if err := e.storage.IncrementVariant(name, choice, 1, 0); err != nil {
-			return 0, err
-		}
-
-		return choice, nil
+		return uint32(rand.Intn(lenVariants)), nil
 	}
 
 	bestValue := float32(0.0)
@@ -62,13 +57,12 @@ func (e *epsilonGreedy) Choose(name string) (uint32, error) {
 	}
 
 	bestIdx := rand.Intn(len(best))
-	choice := uint32(best[bestIdx])
+	return uint32(best[bestIdx]), nil
+}
 
-	if err := e.storage.IncrementVariant(name, choice, 1, 0); err != nil {
-		return 0, err
-	}
-
-	return choice, nil
+//
+func (e *epsilonGreedy) Show(name string, choice uint32) error {
+	return e.storage.IncrementVariant(name, choice, 1, 0)
 }
 
 //

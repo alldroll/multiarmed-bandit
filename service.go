@@ -27,7 +27,7 @@ func NewService(db *sql.DB) (*service, error) {
 		return nil, err
 	}
 
-	algo := NewEpsilonGreedy(0.1, updatable)
+	algo := NewThompsonSampling([2]float64{1, 1}, updatable)
 
 	return &service{
 		storage:   storage,

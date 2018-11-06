@@ -5,31 +5,31 @@ import (
 )
 
 type memoryStorage struct {
-	data []Experiment
+	data map[string]Experiment
 }
 
 func NewInMemoryStorage() *memoryStorage {
 	return &memoryStorage{
-		data: []Experiment{},
+		data: map[string]Experiment{},
 	}
 }
 
 func (m *memoryStorage) Find(name string) (Experiment, error) {
-	for _, experiment := range m.data {
-		if experiment.GetName() == name {
-			return experiment, nil
-		}
-	}
-
-	return nil, nil
+	return m.data[name], nil
 }
 
 func (m *memoryStorage) FindAll() ([]Experiment, error) {
-	return m.data, nil
+	data := []Experiment{}
+
+	for _, experiment := range m.data {
+		data = append(data, experiment)
+	}
+
+	return data, nil
 }
 
 func (m *memoryStorage) Save(experiment Experiment) error {
-	m.data = append(m.data, experiment)
+	m.data[experiment.GetName()] = experiment
 	return nil
 }
 

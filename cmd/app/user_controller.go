@@ -66,9 +66,14 @@ func (c *userController) choiceHandler(w http.ResponseWriter, r *http.Request) {
 		experiment = vars["experiment"]
 	)
 
-	variant, err := c.algo.Choose(experiment)
+	variant, err := c.algo.Suggest(experiment)
 
 	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	if err := c.algo.Show(experiment, variant); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
