@@ -20,7 +20,7 @@ func (s *sqlStorage) Find(name string) (Experiment, error) {
 	rows, err := s.db.Query(
 		`SELECT e.gamma, v.shows, v.rewards
 		FROM experiment e INNER JOIN variant v ON v.experiment_name = e.name
-		WHERE e.name = %s`,
+		WHERE e.name = ?`,
 		name,
 	)
 
@@ -71,10 +71,12 @@ func (s *sqlStorage) FindAll() ([]Experiment, error) {
 
 		if prev != nil && prev.GetName() != name {
 			experiments = append(experiments, prev)
-			variants = variants[:0]
+			variants = []Variant{}
+			prev = nil
 		}
 
 		variants = append(variants, NewVariant(0, rewards, shows))
+		// TODO think about extra memory allocation here
 		prev = NewExperiment(name, gamma, variants)
 	}
 

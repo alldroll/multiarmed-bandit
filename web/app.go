@@ -1,4 +1,4 @@
-package main
+package web
 
 import (
 	"database/sql"
@@ -8,23 +8,36 @@ import (
 	"github.com/gorilla/mux"
 	"log"
 	"net/http"
-	"os"
 	"time"
 )
 
+type App struct {
+	config AppConfig
+}
+
+type AppConfig struct {
+	Port       string
+	DBUserName string
+	DBPassword string
+	DBHost     string
+	DBName     string
+}
+
 //
-func runApp() {
-	port := os.Getenv("PORT")
+func NewApp(config AppConfig) App {
+	return App{
+		config: config,
+	}
+}
+
+//
+func (a App) Run() {
+	port := a.config.Port
 	if port == "" {
-		log.Fatal("$PORT must be set")
+		log.Fatal("Port must be set")
 	}
 
-	db, err := createDB(
-		os.Getenv("APP_DB_USERNAME"),
-		os.Getenv("APP_DB_PASSWORD"),
-		os.Getenv("APP_DB_HOST"),
-		os.Getenv("APP_DB_NAME"),
-	)
+	db, err := a.createDB()
 
 	if err != nil {
 		log.Fatal(err)
@@ -36,12 +49,13 @@ func runApp() {
 		log.Fatal(err)
 	}
 
-	runScheduler(service)
+	a.runScheduler(service)
 
 	userController := newUserController(service.GetAlgorithm())
 	adminController := newAdminController(service.GetStorage())
 
 	r := mux.NewRouter()
+	r.StrictSlash(true)
 
 	userController.bindRoutes(r)
 	adminController.bindRoutes(r)
@@ -50,20 +64,20 @@ func runApp() {
 }
 
 //
-func createDB(user, password, host, db string) (*sql.DB, error) {
+func (a App) createDB() (*sql.DB, error) {
 	connectionString := fmt.Sprintf(
 		"%s:%s@tcp(%s)/%s",
-		user,
-		password,
-		host,
-		db,
+		a.config.DBUserName,
+		a.config.DBPassword,
+		a.config.DBHost,
+		a.config.DBName,
 	)
 
 	return sql.Open("mysql", connectionString)
 }
 
 //
-func runScheduler(service mb.Service) {
+func (a App) runScheduler(service mb.Service) {
 	go func() {
 		for range time.NewTicker(2 * time.Second).C {
 			service.Update()

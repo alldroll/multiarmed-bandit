@@ -1,0 +1,25 @@
+{{template "header" .}}
+
+<div class="container">
+    <h2>Experiment {{.Experiment.GetName }}</h2>
+    <table class="table">
+        <thead>
+            <tr>
+                <th scope="col">Variant</th>
+                <th scope="col">Shows</th>
+                <th scope="col">Rewards</th>
+            </tr>
+        </thead>
+        <tbody>
+            {{ range $i, $var := .Experiment.GetVariants }}
+                <tr>
+                    <td>{{ $i }}</td>
+                    <td>{{ $var.GetShows }}</td>
+                    <td>{{ $var.GetReward }}</td>
+                </tr>
+            {{ end }}
+        </tbody>
+    </table>
+</div>
+
+{{template "footer" .}}
